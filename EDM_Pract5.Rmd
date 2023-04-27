@@ -1,0 +1,57 @@
+---
+title: "EDM"
+output: html_document
+date: "2023-04-26"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rio)
+library(randomForest)
+library(ggplot2)
+library(gridExtra)
+library(magrittr)
+library(pdp)
+library(iml)
+library(patchwork)
+```
+
+## 1.- One dimensional Partial Dependence Plot.
+
+```{r}
+bici = import("day.csv")
+
+bici$MISTY = ifelse(bici$weathersit == 2, 1, 0)
+bici$RAIN = ifelse(bici$weathersit %in% c(3,4), 1, 0)
+
+bici$windspeed2 = bici$windspeed * 67
+bici$hum2 = bici$hum * 100
+bici$temp2 <- (50 - (-16)) * bici$temp + (-16)
+
+bici$dteday = as.Date(bici$dteday)
+reference_date <- as.Date("2011-01-01")
+bici$days_since_2011 <- as.numeric(bici$dteday - reference_date)
+
+pred_df = data.frame(workingday = bici$workingday, holiday = bici$holiday, misty = bici$MISTY, 
+                     rain = bici$RAIN, windspeed = bici$windspeed2, temp = bici$temp2,
+                     hum = bici$hum2, days = bici$days_since_2011, cnt = bici$cnt)
+
+bici$season = as.factor(bici$season)
+
+seasons = model.matrix(~ bici$season , data = bici)[,-1]
+colnames(seasons) <- c('season2','season3','season4')
+pred_matrix = cbind(pred_df, seasons)
+```
+
+```{r}
+set.seed(1234)
+rf <- randomForest(formula = cnt ~ ., 
+                   data = pred_matrix,
+                   ntree = 100)
+rf
+```
+```{r}
+predictor <- Predictor$new(rf,data=pred_matrix,y=pred_matrix$cnt)
+effs <- FeatureEffects$new(predictor,feature = c("temp","hum","days","windspeed"),method = "pdp")
+plot(effs)
+```
