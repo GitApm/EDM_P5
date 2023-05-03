@@ -76,3 +76,24 @@ plot(effs1)
 ```
 On this graph we can obtain similar conclusions, although we now can see the correlation between two variables and the prediction of cnt. (bikes rented)
 As we mentioned before, the optimal point for temperature is between 20 and 30 degrees and the humidity does not affect the prediction as long as it isn't high (or at least higher than around 75%). We can see that on the plot above, where the lighter areas are a few columns on the optimal temperature and below some high humidity level.
+
+## 3.- PDP to explain the price of a house.
+
+```{r}
+house = read.csv("kc_house_data.csv")
+
+house <- house %>% select("price","bedrooms","bathrooms","sqft_living","sqft_lot","floors","yr_built")
+
+rf2 <- randomForest(formula = price ~ ., 
+                   data = house,
+                   ntree = 100)
+rf2
+```
+```{r}
+pred3 <- Predictor$new(rf2,data=house,y=house$price)
+effs2 <- FeatureEffects$new(pred3,feature = c("bedrooms","bathrooms","sqft_living","floors"),method = "pdp")
+plot(effs2)
+```
+
+As we can see in the plots, the number of bedrooms and floors does not matter much, in the bedrooms feature it seems lesser bedrooms makes the price go up, although this could be happening because of the amount of data and the variability of house pricing with the same number of bedrooms. Also, more floors implies higher price, although the correlation between floors and pricing is not as notable as the correlation with the number of bathrooms and the square feet of living.
+On those variables, it is easy to see that higher values means higher pricing.
