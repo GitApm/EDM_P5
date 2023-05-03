@@ -55,3 +55,24 @@ predictor <- Predictor$new(rf,data=pred_matrix,y=pred_matrix$cnt)
 effs <- FeatureEffects$new(predictor,feature = c("temp","hum","days","windspeed"),method = "pdp")
 plot(effs)
 ```
+
+On this PDP plots we can see various things about the correlation between the predictor features and the amount of bikes that are predicted to get withdrawn.
+
+Firstly, the temperature is has an interesting behavior, as lower values of the prediction are expected when the temperature is lower, specially below 19 degrees more or less. It appears that the optimal temperature to go on a bike ride is between 20 and 30 degrees and if the temperature continues to rise, a smaller number of bikes is expected to get rented.
+
+Humidity is different from temperature as it pretty much does not matter to the prediction (because of being constant) as long as it is lower than 75 %, where higher values of humidity lower the prediction.
+
+About the days since 2011, mostly the trend is increasing the values of the prediction, in particular there were two main big increases, one around the 100th day and the second one on the 400th day (more or less). However, despite having a positive trend all throughout time, on the last 100 days or so the trend was decreasing and the amount of bikes rented was less the on the 600th day.
+
+Finally, wind speed's behavior was much like the humidity, as it does not affect to the prediction up to higher values of it.
+
+
+## 2.- Bidimensional Partial Dependency Plot.
+
+```{r}
+pred1 <- Predictor$new(rf,data=pred_matrix)
+effs1 <- FeatureEffect$new(pred1,feature = c("temp","hum"),method = "pdp")
+plot(effs1)
+```
+On this graph we can obtain similar conclusions, although we now can see the correlation between two variables and the prediction of cnt. (bikes rented)
+As we mentioned before, the optimal point for temperature is between 20 and 30 degrees and the humidity does not affect the prediction as long as it isn't high (or at least higher than around 75%). We can see that on the plot above, where the lighter areas are a few columns on the optimal temperature and below some high humidity level.
